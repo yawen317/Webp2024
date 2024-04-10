@@ -1,1 +1,57 @@
-
+<html>
+<head>
+<script>
+    var url = "https://api.unsplash.com/photos?client_id=812193ef71ca946e361ed541979a0cfd91e9419a19235fd05f51ea14233f020a&per_page=30";
+    var xhr = new XMLHttpRequest();
+  	var dataset;
+    xhr.open("GET", url, true);
+    xhr.send();
+    xhr.onreadystatechange = function(){
+        if(this.readyState == 4 && this.status == 200)
+            dataset = JSON.parse(this.responseText);
+    };
+    function getimg() {
+        var myGallery = document.getElementById("gallery");
+        dataset.forEach(function(data, index) {
+            var image = document.createElement("img");
+            image.src = data['urls']['small'];
+            myGallery.appendChild(image);
+        });
+    }
+</script>
+<style>
+    .gallery {
+        --g: 6px; /* the gap */
+        
+        display: grid;
+        width: 1200px; /* the size */
+        aspect-ratio: 1;
+        grid: auto-flow 1fr/repeat(3,1fr);
+        gap: var(--g);
+    }
+    .gallery img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale();
+        cursor: pointer;
+        transition: .5s
+    }
+    .gallery img:hover {
+        filter: grayscale(0);
+        }
+    .gallery img:nth-child(2) {
+        grid-area: 1/2/span 2/span 2;
+        clip-path: polygon(0 0,100% 0,100% 100%,calc(50% + var(--g)/4) 100%,0 calc(50% - var(--g)/4))
+        }
+    .gallery img:nth-child(3) {
+        grid-area: 2/1/span 2/span 2;
+        clip-path: polygon(0 0,calc(50% - var(--g)/4) 0,100% calc(50% + var(--g)/4),100% 100%,0 100%);    
+    }
+</style>
+</head>
+<body>
+<button onclick="getimg()">Get IMG</button>
+<div id='gallery' class="gallery"></div>
+</body>
+</html>
