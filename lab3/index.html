@@ -1,21 +1,41 @@
 <html>
 <head>
 <script>
-    var url = "https://api.unsplash.com/photos?client_id=812193ef71ca946e361ed541979a0cfd91e9419a19235fd05f51ea14233f020a&per_page=30";
+    var flickrRecentUrl = 'https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=ca370d51a054836007519a00ff4ce59e&per_page=10&format=json&nojsoncallback=1';
+    var flickrPhotoUrl = 'https://api.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=ca370d51a054836007519a00ff4ce59e&photo_id=';
+    var flickrApiKey = 'ca370d51a054836007519a00ff4ce59e';
+
     var xhr = new XMLHttpRequest();
-  	var dataset;
-    xhr.open("GET", url, true);
+    var dataset;
+
+    xhr.open("GET", flickrRecentUrl, true);
     xhr.send();
+
     xhr.onreadystatechange = function(){
-        if(this.readyState == 4 && this.status == 200)
+        if(this.readyState == 4 && this.status == 200) {
             dataset = JSON.parse(this.responseText);
+        }
     };
-    function getimg() {
+
+    function getFlickrImages() {
         var myGallery = document.getElementById("gallery");
-        dataset.forEach(function(data, index) {
-            var image = document.createElement("img");
-            image.src = data['urls']['small'];
-            myGallery.appendChild(image);
+        dataset.photos.photo.forEach(function(photo, index) {
+            var photoId = photo.id;
+            var photoUrl = flickrPhotoUrl + photoId + '&format=json&nojsoncallback=1';
+
+            var xhrPhoto = new XMLHttpRequest();
+            xhrPhoto.open("GET", photoUrl, true);
+            xhrPhoto.send();
+
+            xhrPhoto.onreadystatechange = function(){
+                if(this.readyState == 4 && this.status == 200) {
+                    var photoData = JSON.parse(this.responseText);
+                    var imageUrl = photoData.sizes.size[5].source; // Choose a size of the image you prefer
+                    var image = document.createElement("img");
+                    image.src = imageUrl;
+                    myGallery.appendChild(image);
+                }
+            };
         });
     }
 </script>
@@ -35,23 +55,23 @@
         object-fit: cover;
         filter: grayscale();
         cursor: pointer;
-        transition: .5s
+        transition: .5s;
     }
     .gallery img:hover {
         filter: grayscale(0);
-        }
+    }
     .gallery img:nth-child(2) {
         grid-area: 1/2/span 2/span 2;
-        clip-path: polygon(0 0,100% 0,100% 100%,calc(50% + var(--g)/4) 100%,0 calc(50% - var(--g)/4))
-        }
+        clip-path: polygon(0 0,100% 0,100% 100%,calc(50% + var(--g)/4) 100%,0 calc(50% - var(--g)/4));
+    }
     .gallery img:nth-child(3) {
         grid-area: 2/1/span 2/span 2;
-        clip-path: polygon(0 0,calc(50% - var(--g)/4) 0,100% calc(50% + var(--g)/4),100% 100%,0 100%);    
+        clip-path: polygon(0 0,calc(50% - var(--g)/4) 0,100% calc(50% + var(--g)/4),100% 100%,0 100%);
     }
 </style>
 </head>
 <body>
-<button onclick="getimg()">Get IMG</button>
+<button onclick="getFlickrImages()">Get Flickr Images</button>
 <div id='gallery' class="gallery"></div>
 </body>
 </html>
