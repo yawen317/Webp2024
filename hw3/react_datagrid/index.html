@@ -1,1 +1,95 @@
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+const App = () => {
+  const openurl = "https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=6";
+  const [dataset, setDataset] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTitle, setSearchTitle] = useState('');
+
+  useEffect(() => {
+    fetch(openurl, { method: 'GET' })
+      .then(res => res.json())
+      .then(res => {
+        setDataset(res);
+      });
+  }, []);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTitle(value);
+    setCurrentPage(1);
+    if (value === '') {
+      setDataset(dataset);
+    } else {
+      const filteredData = dataset.filter(data =>
+        data['title'].toLowerCase().includes(value.toLowerCase())
+      );
+      setDataset(filteredData);
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const paginatedData = () => {
+    const startIndex = (currentPage - 1) * 10;
+    return dataset.slice(startIndex, startIndex + 10);
+  };
+
+  const totalPages = Math.ceil(dataset.length / 10);
+
+  return (
+    <div className="container mt-5">
+      <h1>景點觀光展覽資訊</h1>
+      <input
+        type="text"
+        className="form-control"
+        value={searchTitle}
+        onChange={handleSearchChange}
+        placeholder="搜索標題..."
+      />
+      <table className="table table-dark mt-3">
+        <thead>
+          <tr>
+            <th>景點名稱</th>
+            <th>景點地址</th>
+            <th>景點票價</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedData().map((data, index) => (
+            <tr key={index}>
+              <td>{data['title']}</td>
+              <td>{data['showInfo'][0]['location']}</td>
+              <td>{data['showInfo'][0]['price']}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="d-flex justify-content-between">
+        <button
+          className="btn btn-primary"
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
+          上一頁
+        </button>
+        <div>
+          第 {currentPage} / {totalPages} 頁
+        </div>
+        <button
+          className="btn btn-primary"
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          下一頁
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default App;
 
